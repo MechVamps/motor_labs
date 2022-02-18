@@ -52,11 +52,11 @@ void loop() {
 //  stepsPerRevolution = 
 
   // Adjust Distance
-  if distance <10{
-    stepsPerRevolution = stepsPerRevolution *distance
+  if (distance <10){
+    stepsPerRevolution = stepsPerRevolution *distance;
   }
   else{
-    stepsPerRevolution = stepsPerRevolution * 0.5*distance
+    stepsPerRevolution = stepsPerRevolution * 0.5*distance;
   }
   
   /// Move
