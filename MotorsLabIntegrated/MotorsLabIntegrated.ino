@@ -218,6 +218,9 @@ void loop() {
   }
 
   if (S||P) {
+    analogWrite(red_light_pin, 255);
+    analogWrite(green_light_pin, 255);
+    analogWrite(blue_light_pin, 0);
     //Serial.println(reading);
     char messageBuf[150];
     sprintf(messageBuf, "S:%d,I:%d,U:%d,F:%d", (Gui||Del), 0, distance, force);
