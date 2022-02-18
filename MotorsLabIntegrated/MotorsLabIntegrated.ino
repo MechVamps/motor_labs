@@ -1,3 +1,5 @@
+#include <Servo.h>
+
 // -----------------------------------------------------------------------------
 // FSM INITIALIZATIONS
 const int buttonPin = 12;
@@ -24,6 +26,10 @@ bool RC = 0; // when true, RC Servomotor is active
 bool DC = 0; // when true, DC Motor is active
 bool SM = 0; // when true, Stepper Motor is active
 String GUImessage; // string of data coming from GUI
+int red_light_pin= 6;
+int green_light_pin = 5;
+int blue_light_pin = 4;
+
 // -----------------------------------------------------------------------------
 // STEPPER MOTOR INITIALIZATIONS (FROM AMY)
 // Stepper
@@ -38,18 +44,19 @@ const int trigPin = 2;
 const int echoPin = 8;
 long duration;
 int distance;
+
 // -----------------------------------------------------------------------------
 // RC SERVOMOTOR INITIALIZATIONS (FROM ADVAIT)
-#include <Servo.h>
- Servo servo;
- int value;
- int reading;
- long force = 0;
- // -----------------------------------------------------------------------------
+
+Servo servo;
+int value;
+int reading;
+long force = 0;
+// -----------------------------------------------------------------------------
 
 // DC MOTOR INITIALIZATIONS (FROM JESSICA)
 
- // -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 long read_force(int pin) // From sensors lab
 {
@@ -124,6 +131,9 @@ void setup() {
   servo.attach(11); //servo at digital pin 11
   servo.write(0); //initial point for servo
   // -----------------------------------------------------------------------------
+  pinMode(red_light_pin, OUTPUT);
+  pinMode(green_light_pin, OUTPUT);
+  pinMode(blue_light_pin, OUTPUT);
 }
 
 void loop() {
@@ -145,178 +155,150 @@ void loop() {
       // END ULTRASONIC SENSOR CODE FROM AMY
    // -----------------------------------------------------------------------------
    
+  force = read_force(A0);
   // Finite State Machine 4 Block Structure:
-// BLOCK 1: Inputs
-bool BTN = digitalRead(buttonPin); // read buttonPin
-bool TMR_enable = P||Del;  
-bool TMR = timer(TMR_enable, TMR_duration);
+  // BLOCK 1: Inputs
+  bool BTN = digitalRead(buttonPin); // read buttonPin
+  bool TMR_enable = P||Del;  
+  bool TMR = timer(TMR_enable, TMR_duration);
 
-if (D) {
-  count = count + 1; // count transitions into sensor control
-}
-if (G) {
-  count = 0; // reset counter
-}
-if (count == 1) {
-  CNT = 0;
-  RC = 1;
-  DC = 0;
-  SM = 0;
-} else if (count == 2) {
-  RC = 0;
-  DC = 1;
-  SM = 0;
-} else if (count == 3) {
-  RC = 0;
-  DC = 0;
-  SM = 1;
-} else if (count == 4) {
-  CNT = 1;
-}
-
-// BLOCK 2: Transitions
-bool A = R&&!BTN; // Latch on READY
-     B = R&&BTN; // Transition from READY to Press
-bool C = P&&BTN&&!TMR; // Latch on Press
-     D = P&&!BTN&&!TMR&&!CNT; // Transition from Press to Sensor Control
-bool E = S&&!BTN&&!CNT; // Latch on Sensor Control
-     F = S&&BTN; // Transition from Sensor Control to Press
-     G = P&&TMR; // Transition from Press to GUI Control
-bool H = Gui&&!BTN; // Latch on GUI Control
-     I = Gui&&BTN; // Transition from GUI Control to Delay
-bool J = Del&&BTN&&!TMR; // Latch on Delay
-bool K = Del&&!BTN; // Transition from Delay to GUI Control
-     L = Del&&TMR; // Transition from Delay to Sensor Control
-bool M = S&&CNT; // Transition from Sensor Control to READY
-
-// BLOCK 3: End States
-R = A||M;
-P = B||C||F;
-S = D||E||L;
-Gui = G||H||K;
-Del = I||J;
-
-// BLOCK 4: Outputs
-if (R) {
-  // set LED to green
-  // all motors off
-  count = 0;
-  CNT = 0;
-  TMR = 0;
-//  Serial.println("Ready");
-}
-if (S||P) {
-  if (count == 0) {
-    // all motors inactive
+  if (D) {
+    count = count + 1; // count transitions into sensor control
   }
-  if (RC) {
-//    Serial.println("RC Servomotor is active (Sensor Controlled)");
-    // -----------------------------------------------------------------------------
-    // START OF RC SERVOMOTOR CODE FROM ADVAIT
-    reading = analogRead(A0); //attached to analog 0
-//    Serial.print("Sensor value = ");
-//    Serial.println(reading);
- 
-    value = map(reading, 300, 1023, 0, 255);
-      servo.write(value);
- 
-//    delay(100);
-    // END OF RC SERVOMOTOR CODE FROM ADVAIT
-    // -----------------------------------------------------------------------------
+  if (G) {
+    count = 0; // reset counter
+  }
+  if (count == 1) {
+    CNT = 0;
+    RC = 1;
+    DC = 0;
+    SM = 0;
+  } else if (count == 2) {
+    RC = 0;
+    DC = 1;
+    SM = 0;
+  } else if (count == 3) {
+    RC = 0;
+    DC = 0;
+    SM = 1;
+  } else if (count == 4) {
+    CNT = 1;
+  }
 
-  } else if (DC) {
-//    Serial.println("DC Motor is active (Sensor Controlled)");
-    // -----------------------------------------------------------------------------
-    // START OF DC MOTOR CODE FROM JESSICA
+  // BLOCK 2: Transitions
+  bool A = R&&!BTN; // Latch on READY
+       B = R&&BTN; // Transition from READY to Press
+  bool C = P&&BTN&&!TMR; // Latch on Press
+       D = P&&!BTN&&!TMR&&!CNT; // Transition from Press to Sensor Control
+  bool E = S&&!BTN&&!CNT; // Latch on Sensor Control
+       F = S&&BTN; // Transition from Sensor Control to Press
+       G = P&&TMR; // Transition from Press to GUI Control
+  bool H = Gui&&!BTN; // Latch on GUI Control
+       I = Gui&&BTN; // Transition from GUI Control to Delay
+  bool J = Del&&BTN&&!TMR; // Latch on Delay
+  bool K = Del&&!BTN; // Transition from Delay to GUI Control
+       L = Del&&TMR; // Transition from Delay to Sensor Control
+  bool M = S&&CNT; // Transition from Sensor Control to READY
+
+  // BLOCK 3: End States
+  R = A||M;
+  P = B||C||F;
+  S = D||E||L;
+  Gui = G||H||K;
+  Del = I||J;
+
+  // BLOCK 4: Outputs
+  if (R) {
+    // set LED to green
+    // all motors off
+    count = 0;
+    CNT = 0;
+    TMR = 0;
+  //  Serial.println("Ready");
+  }
+
+  if (S||P) {
+    //Serial.println(reading);
+    char messageBuf[150];
+    sprintf(messageBuf, "S:%d,I:%d,U:%d,F:%d", (Gui||Del), 0, distance, force);
+    Serial.println(messageBuf);
     
-    // END OF DC MOTOR CODE FROM JESSICA
-    // -----------------------------------------------------------------------------
 
-  } else if (SM) {
-//    Serial.println("Stepper Motor is active (Sensor Controlled)");
-    // -----------------------------------------------------------------------------
-    // START OF STEPPER MOTOR CODE FROM AMY
-//      // Prints the distance on the Serial Monitor
-////      Serial.print("Distance: ");
-////      Serial.println(distance);
-//      /// Alter delay depending on distance
-//      delay_time_on = delay_time_on + distance*0.1;
-//      delay_time_off = delay_time_off + distance*0.1;
-//      if (distance < 10){
-//        delay_time_on = 50;
-//        delay_time_off = 50;
-//      }
-//      if (distance > 10 && distance < 20){
-//        delay_time_on = 100;
-//        delay_time_off = 100;
-//      }
-//      if (distance > 20 && distance < 30){
-//        delay_time_on = 200;
-//        delay_time_off = 200;
-//      }
-//      if (distance > 30){
-//        delay_time_on = 500;
-//        delay_time_off = 500;
-//      }
-//      
-//      /// Move
-////      Serial.println("Right Forward Test");
-//      digitalWrite(right_forward, HIGH);
-//      delay(delay_time_on);
-//      digitalWrite(right_forward, LOW);
-//      delay(delay_time_off);
-////      Serial.println("Left Reverse Test");
-//      digitalWrite(left_reverse, HIGH);
-//      delay(delay_time_on);
-//      digitalWrite(left_reverse, LOW);
-//      delay(delay_time_off);
-    // END OF STEPPER MOTOR CODE FROM AMY
-    // -----------------------------------------------------------------------------
+    //Serial.print("status:"); Serial.print(Gui||Del); Serial.print(";"); 
+    //Serial.print("i:"); Serial.print(0); Serial.print(";");
+    //Serial.print("u:"); Serial.print(distance); Serial.print(";");
+    //Serial.print("f:"); Serial.print(force); Serial.println(";");
+
+    if (count == 0) {
+      // all motors inactive
+    }
+
+    if (RC) {
+      // -----------------------------------------------------------------------------
+      // START OF RC SERVOMOTOR CODE FROM ADVAIT
+      reading = analogRead(A0); //attached to analog 0
+      value = map(reading, 300, 1023, 0, 255);
+      servo.write(value);
+   
+  //    delay(100);
+      // END OF RC SERVOMOTOR CODE FROM ADVAIT
+      // -----------------------------------------------------------------------------
+
+    } else if (DC) {
+  //    Serial.println("DC Motor is active (Sensor Controlled)");
+      // -----------------------------------------------------------------------------
+      // START OF DC MOTOR CODE FROM JESSICA
+      
+      // END OF DC MOTOR CODE FROM JESSICA
+      // -----------------------------------------------------------------------------
+
+    } else if (SM) {
+      // TODO
+    }
+    // set LED to blue, yellow, or pink depending on motor
+  }
+
+
+  if (Gui||Del) {
+    analogWrite(red_light_pin, 255);
+    analogWrite(green_light_pin, 255);
+    analogWrite(blue_light_pin, 255);
+    // Serial.println("GUI Controlled, all motors active");
+    // set LED to white
+    // use GUI output to control motors
+    // Serial.println("GUI Coming");
+    int sv;
+
+    if (Serial.available() > 0) {
+      analogWrite(red_light_pin, 0);
+      analogWrite(green_light_pin, 0);
+      analogWrite(blue_light_pin, 255);
+      GUImessage = Serial.readStringUntil("\n");
+      Serial.println("GUI COMING");
+
+      int commaIndex = GUImessage.indexOf(",");
+      int secondCommaIndex = GUImessage.indexOf(",", commaIndex + 1);
+      int thirdCommaIndex = GUImessage.indexOf(",", secondCommaIndex + 1);
+      int forthCommaIndex = GUImessage.indexOf(",", thirdCommaIndex+1);
+      String firstValue = GUImessage.substring(0, commaIndex);
+      String secondValue = GUImessage.substring(commaIndex + 1, secondCommaIndex);
+      String thirdValue = GUImessage.substring(secondCommaIndex + 1,thirdCommaIndex);
+      String forthValue = GUImessage.substring(thirdCommaIndex + 1,forthCommaIndex);
+      String fifthValue = GUImessage.substring(forthCommaIndex + 1);
+      int gui = firstValue.substring(2).toInt();
+      int dc_mode = secondValue.substring(3).toInt();
+      int dc_val = thirdValue.substring(3).toInt();
+      sv = forthValue.substring(2).toInt();
+      Serial.println(sv);
+
+      analogWrite(red_light_pin, sv);
+      analogWrite(green_light_pin, 0);
+      analogWrite(blue_light_pin, 0);
+      servo.write(sv);
+      int st = fifthValue.substring(2).toInt();
+    }
 
   }
-  // set LED to blue, yellow, or pink depending on motor
-}
-if (Gui||Del) {
-//  Serial.println("GUI Controlled, all motors active");
-  // set LED to white
-  // use GUI output to control motors
-   int sv;
-if (Serial.available() > 0) {
-    GUImessage = Serial.readStringUntil("\n");
-    int commaIndex = GUImessage.indexOf(",");
-  int secondCommaIndex = GUImessage.indexOf(",", commaIndex + 1);
-  int thirdCommaIndex = GUImessage.indexOf(",", secondCommaIndex + 1);
-  int forthCommaIndex = GUImessage.indexOf(",", thirdCommaIndex+1);
-  String firstValue = GUImessage.substring(0, commaIndex);
-  String secondValue = GUImessage.substring(commaIndex + 1, secondCommaIndex);
-  String thirdValue = GUImessage.substring(secondCommaIndex + 1,thirdCommaIndex);
-  String forthValue = GUImessage.substring(thirdCommaIndex + 1,forthCommaIndex);
-  String fifthValue = GUImessage.substring(forthCommaIndex + 1);
-  int gui = firstValue.substring(2).toInt();
-  int dc_mode = secondValue.substring(3).toInt();
-  int dc_val = thirdValue.substring(3).toInt();
-  sv = forthValue.substring(2).toInt();
-  int st = fifthValue.substring(2).toInt();
-   }
-//  Serial.println(sv);
-  servo.write(sv);
-}
-//
-//Serial.print("R: "); Serial.print(R); Serial.print("\t");
-//Serial.print("P: "); Serial.print(P); Serial.print("\t");
-//Serial.print("S: "); Serial.print(S); Serial.print("\t");
-//Serial.print("Gui: "); Serial.print(Gui); Serial.print("\t");
-//Serial.print("Del: "); Serial.print(Del); Serial.print("\t");
-//Serial.print("count = "); Serial.println(count);
 
-force = read_force(A0);
-//Serial.println(reading);
-char messageBuf[150];
-sprintf(messageBuf, "S:%d,I:%d,U:%d,F:%d", (Gui||Del), 0, distance, force);
-Serial.println(messageBuf);
-//Serial.print("status:"); Serial.print(Gui||Del); Serial.print(";"); 
-//Serial.print("i:"); Serial.print(0); Serial.print(";");
-//Serial.print("u:"); Serial.print(distance); Serial.print(";");
-//Serial.print("f:"); Serial.print(force); Serial.println(";");
 
 }
