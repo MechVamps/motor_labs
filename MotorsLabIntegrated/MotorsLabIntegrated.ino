@@ -1,5 +1,6 @@
 #include <Servo.h>
 #include <Stepper.h>
+#include <SharpIR.h>
 
 // -----------------------------------------------------------------------------
 // FSM INITIALIZATIONS
@@ -35,7 +36,7 @@ int blue_light_pin = 4;
 // STEPPER MOTOR INITIALIZATIONS (FROM AMY)
 // Stepper
 // Number of steps per output rotation
-int stepsPerRevolution = 2000;
+int stepsPerRevolution = 200;
 
 // Create Instance of Stepper library
 Stepper myStepper(stepsPerRevolution, 2,8,9,10);
@@ -57,7 +58,67 @@ long force = 0;
 // -----------------------------------------------------------------------------
 
 // DC MOTOR INITIALIZATIONS (FROM JESSICA)
+// IR
 
+#define irPin A3 // A3
+#define model 1080
+int ir_distance;
+float volts;
+SharpIR mySensor = SharpIR(irPin, model);
+
+// ENCODERS 
+
+int encA = 3;
+int encB = 4;
+
+// MOTORS //
+
+// DC
+
+int pwmPin = 6;
+int in_1 = 5;  //Initialize pin D10 to drive motor1
+int in_2 = 7; //Initialize pin D11 to drive motor1
+int pwm_speed;
+int prev_dc_mode = 0;
+
+const int maxpwm = 255;
+const int minpwm = 90;
+const int max_speed_windup = 1000;
+const int max_pos_windup = 1000;
+//Encoder encoder(encA, encB);
+
+//PID controller variables for position controller
+
+int target_pos = 0;
+long curr_pos = 0;
+double kp_p=0.001, ki_p=0.001, kd_p=5;
+int e_pos_sum = 0;
+int e_pos_last = 0;
+
+//PID controller variables for speed controller
+
+double curr_speed, target_speed;
+double kp_s=0.35, ki_s=0.001, kd_s=0.15;
+int e_speed_sum = 0;
+int e_speed_last = 0;
+
+
+// SYSTEM STATE
+
+String gui="";
+long debounce = 500;
+long c_time = 0;
+int sys_state = 0;  
+String myString="";
+int c_button2_st;
+int p_button2_st = 0;
+int np=1;
+int prev_gui = 0;
+
+long prev_pos = 0;
+long curr_pos_sp = 0;
+unsigned long prev_time = millis();
+int last_pwm = 0;
 // -----------------------------------------------------------------------------
 
 long read_force(int pin) // From sensors lab
@@ -124,7 +185,22 @@ void setup() {
 // RC SERVOMOTOR SETUP (FROM ADVAIT)
   servo.attach(11); //servo at digital pin 11
   servo.write(0); //initial point for servo
-  // -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// DC MOTOR SETUP (FROM JESSICA)
+  pinMode(encA, INPUT_PULLUP);
+  pinMode(encB, INPUT_PULLUP); 
+  pinMode(in_1, OUTPUT);
+  pinMode(in_2, OUTPUT);
+  pinMode(pwmPin, OUTPUT); 
+  
+  target_pos = 0;
+  curr_pos = 0;
+    
+  // DC motor off
+  analogWrite(pwmPin, 0);
+  digitalWrite(in_1, LOW);
+  digitalWrite(in_2, LOW);
+// -----------------------------------------------------------------------------
   pinMode(red_light_pin, OUTPUT);
   pinMode(green_light_pin, OUTPUT);
   pinMode(blue_light_pin, OUTPUT);
@@ -150,6 +226,7 @@ void loop() {
    // -----------------------------------------------------------------------------
    
   force = read_force(A0);
+  ir_distance = mySensor.getDistance();
   // Finite State Machine 4 Block Structure:
   // BLOCK 1: Inputs
   bool BTN = digitalRead(buttonPin); // read buttonPin
@@ -208,7 +285,10 @@ void loop() {
     count = 0;
     CNT = 0;
     TMR = 0;
-  //  Serial.println("Ready");
+    digitalWrite(in_1, HIGH);
+    digitalWrite(in_2, HIGH);
+    servo.write(0);
+    Serial.println("Ready");
   }
 
   if (S||P) {
@@ -217,7 +297,7 @@ void loop() {
     analogWrite(blue_light_pin, 0);
     //Serial.println(reading);
     char messageBuf[150];
-    sprintf(messageBuf, "S:%d,I:%d,U:%d,F:%d", (Gui||Del), 0, distance, force);
+    sprintf(messageBuf, "S:%d,I:%d,U:%d,F:%d", (Gui||Del), ir_distance, distance, force);
 //    Serial.println(messageBuf);
     
 
@@ -236,6 +316,7 @@ void loop() {
       reading = analogRead(A0); //attached to analog 0
       value = map(reading, 300, 1023, 0, 255);
       servo.write(value);
+      Serial.println("RC Servo");
    
   //    delay(100);
       // END OF RC SERVOMOTOR CODE FROM ADVAIT
@@ -245,35 +326,49 @@ void loop() {
   //    Serial.println("DC Motor is active (Sensor Controlled)");
       // -----------------------------------------------------------------------------
       // START OF DC MOTOR CODE FROM JESSICA
-      
+      ////  DC MOTOR CONTROL USING IR SENSOR 
+      Serial.println("DC Motor");
+//      if (ir_distance >= 10 && ir_distance <= 30){
+//        pwm_speed = map(ir_distance, 3, 30, 0, 255);
+//        analogWrite(pwmPin, pwm_speed);
+//        digitalWrite(in_1, HIGH);
+//        digitalWrite(in_2 , LOW);
+//      }
+//      else{
+//        pwm_speed = 0;
+//        analogWrite(pwmPin, 0);
+//        digitalWrite(in_1, HIGH);
+//        digitalWrite(in_2 , HIGH);
+//        
+//    }
       // END OF DC MOTOR CODE FROM JESSICA
       // -----------------------------------------------------------------------------
 
     } else if (SM) {
-      //
+      Serial.println("Stepper");
       // Adjust Distance
-      if (distance <10){
-        stepsPerRevolution = stepsPerRevolution *distance;
-      }
-      else{
-        stepsPerRevolution = stepsPerRevolution * 0.5*distance;
-      }
-      
-      /// Move
-      // step one revolution in one direction:
-      
-      unsigned long Forward_time = millis();
-      if (Forward_time > 500) {
-        Serial.println("clockwise");
-        myStepper.step(stepsPerRevolution);
-      }
-      
-      unsigned long Backward_time = Forward_time + 500;
-      if (Backward_time > 1000) {
-         Serial.println("counterclockwise");
-        myStepper.step(-stepsPerRevolution);
-//        Forward_time = millis();
-      }
+//      if (distance <10){
+//        stepsPerRevolution = stepsPerRevolution *0.1*distance;
+//      }
+//      else{
+//        stepsPerRevolution = stepsPerRevolution * 0.05*distance;
+//      }
+//      
+//      /// Move
+//      // step one revolution in one direction:
+//      
+//      unsigned long Forward_time = millis();
+//      if (Forward_time > 500) {
+////        Serial.println("clockwise");
+//        myStepper.step(stepsPerRevolution);
+//      }
+//      
+//      unsigned long Backward_time = Forward_time + 500;
+//      if (Backward_time > 1000) {
+////         Serial.println("counterclockwise");
+//        myStepper.step(-stepsPerRevolution);
+////        Forward_time = millis();
+//      }
       
     
       // step one revolution in the other direction:
@@ -286,10 +381,13 @@ void loop() {
 
 
   if (Gui||Del) {
+    digitalWrite(in_1, HIGH);
+    digitalWrite(in_2, HIGH);
+    servo.write(0);
     analogWrite(red_light_pin, 255);
     analogWrite(green_light_pin, 255);
     analogWrite(blue_light_pin, 255);
-    // Serial.println("GUI Controlled, all motors active");
+     Serial.println("GUI Controlled, all motors active");
     // set LED to white
     // use GUI output to control motors
     // Serial.println("GUI Coming");
