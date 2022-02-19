@@ -1,4 +1,5 @@
 #include <Servo.h>
+#include <Stepper.h>
 
 // -----------------------------------------------------------------------------
 // FSM INITIALIZATIONS
@@ -33,15 +34,16 @@ int blue_light_pin = 4;
 // -----------------------------------------------------------------------------
 // STEPPER MOTOR INITIALIZATIONS (FROM AMY)
 // Stepper
-int right_forward = 10;
-int right_reverse = 3;
-int left_forward = 6;
-int left_reverse = 9;
-int delay_time_on = 100; // how long should each wheel turn?
-int delay_time_off = 100; // delay between tests
+// Number of steps per output rotation
+int stepsPerRevolution = 2000;
+
+// Create Instance of Stepper library
+Stepper myStepper(stepsPerRevolution, 2,8,9,10);
+// free pins: 13, 10, 9, 2, 8
+
 // Ultrasonic
-const int trigPin = 2;
-const int echoPin = 8;
+const int trigPin = A1;
+const int echoPin = A2;
 long duration;
 int distance;
 
@@ -113,16 +115,8 @@ void setup() {
 // -----------------------------------------------------------------------------
 // STEPPER MOTOR SETUP (FROM AMY)
   /// Stepper
-  // Turn these pins on for PWM OUTPUT
-  pinMode(right_forward, OUTPUT);
-  pinMode(right_reverse, OUTPUT);
-  pinMode(left_forward, OUTPUT);
-  pinMode(left_reverse, OUTPUT);
-  // turn all the motor off
-  digitalWrite(right_forward, LOW);
-  digitalWrite(right_reverse, LOW);
-  digitalWrite(left_forward, LOW);
-  digitalWrite(left_reverse, LOW);
+  // set the speed at 20 rpm:
+  myStepper.setSpeed(20);
   /// Ultrasonic
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
   pinMode(echoPin, INPUT); // Sets the echoPin as an Input
@@ -141,17 +135,17 @@ void loop() {
   // -----------------------------------------------------------------------------
   // START ULTRASONIC SENSOR CODE FROM AMY
   // Acquire Distance
-      // Clears the trigPin
-      digitalWrite(trigPin, LOW);
-      delayMicroseconds(2);
-      // Sets the trigPin on HIGH state for 10 micro seconds
-      digitalWrite(trigPin, HIGH);
-      delayMicroseconds(10);
-      digitalWrite(trigPin, LOW);
-      // Reads the echoPin, returns the sound wave travel time in microseconds
-      duration = pulseIn(echoPin, HIGH);
-      // Calculating the distance
-      distance = duration * 0.034 / 2;
+  // Clears the trigPin
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin on HIGH state for 10 micro seconds
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  duration = pulseIn(echoPin, HIGH);
+  // Calculating the distance
+  distance = duration * 0.034 / 2;
       // END ULTRASONIC SENSOR CODE FROM AMY
    // -----------------------------------------------------------------------------
    
@@ -224,7 +218,7 @@ void loop() {
     //Serial.println(reading);
     char messageBuf[150];
     sprintf(messageBuf, "S:%d,I:%d,U:%d,F:%d", (Gui||Del), 0, distance, force);
-    Serial.println(messageBuf);
+//    Serial.println(messageBuf);
     
 
     //Serial.print("status:"); Serial.print(Gui||Del); Serial.print(";"); 
@@ -256,7 +250,36 @@ void loop() {
       // -----------------------------------------------------------------------------
 
     } else if (SM) {
-      // TODO
+      //
+      // Adjust Distance
+      if (distance <10){
+        stepsPerRevolution = stepsPerRevolution *distance;
+      }
+      else{
+        stepsPerRevolution = stepsPerRevolution * 0.5*distance;
+      }
+      
+      /// Move
+      // step one revolution in one direction:
+      
+      unsigned long Forward_time = millis();
+      if (Forward_time > 500) {
+        Serial.println("clockwise");
+        myStepper.step(stepsPerRevolution);
+      }
+      
+      unsigned long Backward_time = Forward_time + 500;
+      if (Backward_time > 1000) {
+         Serial.println("counterclockwise");
+        myStepper.step(-stepsPerRevolution);
+//        Forward_time = millis();
+      }
+      
+    
+      // step one revolution in the other direction:
+     
+//      myStepper.step(-stepsPerRevolution);
+//      delay(500);
     }
     // set LED to blue, yellow, or pink depending on motor
   }
