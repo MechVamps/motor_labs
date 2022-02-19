@@ -287,6 +287,7 @@ void loop() {
     TMR = 0;
     analogWrite(pwmPin, 0);
     servo.write(0);
+    digitalWrite(ledPin , LOW);
 //    Serial.println("Ready");
   }
 
@@ -341,28 +342,28 @@ void loop() {
       digitalWrite(ledPin , HIGH);
 //      Serial.println("Stepper");
       // Adjust Distance
-      if (distanceUS <10){
-        stepsPerRevolution = stepsPerRevolution *0.1*distanceUS;
-      }
-      else{
-        stepsPerRevolution = stepsPerRevolution * 0.05*distanceUS;
-      }
-      
+//      if (distanceUS <10){
+//        stepsPerRevolution = stepsPerRevolution *0.1*distanceUS;
+//      }
+//      else{
+//        stepsPerRevolution = stepsPerRevolution * 0.05*distanceUS;
+//      }
+//      
       /// Move
       // step one revolution in one direction:
       
-      unsigned long Forward_time = millis();
-      if (Forward_time > 500) {
-//        Serial.println("clockwise");
-        myStepper.step(stepsPerRevolution);
-      }
-      
-      unsigned long Backward_time = Forward_time + 500;
-      if (Backward_time > 1000) {
-//         Serial.println("counterclockwise");
-        myStepper.step(-stepsPerRevolution);
-//        Forward_time = millis();
-      }
+//      unsigned long Forward_time = millis();
+//      if (Forward_time > 500) {
+////        Serial.println("clockwise");
+//        myStepper.step(stepsPerRevolution);
+//      }
+//      
+//      unsigned long Backward_time = Forward_time + 500;
+//      if (Backward_time > 1000) {
+////         Serial.println("counterclockwise");
+//        myStepper.step(-stepsPerRevolution);
+////        Forward_time = millis();
+//      }
       
     
       // step one revolution in the other direction:
