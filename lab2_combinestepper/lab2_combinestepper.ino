@@ -2,7 +2,8 @@
 #include <Stepper.h>
 
 // Number of steps per output rotation
-int stepsPerRevolution = 2000;
+int stepsPerRevolution = 20;
+int prevdist = 0;
 
 // Create Instance of Stepper library
 Stepper myStepper(stepsPerRevolution, 2,8,9,10);
@@ -43,30 +44,22 @@ void loop() {
   Serial.print("Distance: ");
   Serial.println(distance); 
   
-  // Adjust speed
-//  if (motorSpeed > 0) {
-//    myStepper.setSpeed(motorSpeed);
-//    // step 1/100 of a revolution:
-//    myStepper.step(stepsPerRevolution / 100);
-//  }
-//  stepsPerRevolution = 
-
-  // Adjust Distance
-  if (distance <10){
-    stepsPerRevolution = stepsPerRevolution *distance;
+  if (distance > prevdist){
+    Serial.println("clockwise");
+    myStepper.step(stepsPerRevolution);
+    delay(500);
   }
-  else{
-    stepsPerRevolution = stepsPerRevolution * 0.5*distance;
+  if (distance < prevdist){
+    Serial.println("counterclockwise");
+    myStepper.step(-stepsPerRevolution);
+    delay(500);
   }
   
-  /// Move
-  // step one revolution in one direction:
-  Serial.println("clockwise");
-  myStepper.step(stepsPerRevolution);
-  delay(500);
+  if (distance == prevdist){
+    Serial.println("clockwise");
+    myStepper.step(stepsPerRevolution);
+    delay(500);
+  }
 
-  // step one revolution in the other direction:
-  Serial.println("counterclockwise");
-  myStepper.step(-stepsPerRevolution);
-  delay(500);
+  prevdist = distance;
 }
