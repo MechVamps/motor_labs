@@ -2,8 +2,9 @@
 #include <Stepper.h>
 
 // Number of steps per output rotation
-int stepsPerRevolution = 20;
-int pos = 0;
+double stepsPerRevolution = 0.56;
+int deg = 0;
+int prevdist = 0;
 
 // Create Instance of Stepper library
 Stepper myStepper(stepsPerRevolution, 2,8,9,10);
@@ -43,25 +44,19 @@ void loop() {
   // Prints the distance on the Serial Monitor
   Serial.print("Distance: ");
   Serial.println(distance); 
+
+  deg = stepsPerRevolution*1.8;
   
   /// Move
-  // step one revolution in one direction:
-  Serial.println("clockwise");
-  myStepper.step(stepsPerRevolution);
-  delay(500);
-  for (int i = 0; i <= stepsPerRevolution; i++){
-    pos = pos + 1;
-    Serial.print("Stepper position: ");
-    Serial.println(pos);
+  if (distance < prevdist){
+    myStepper.step(deg);
+  }
+  if (distance == prevdist){
+    
+  }
+  if (distance > prevdist){
+    myStepper.step(-deg);
   }
 
-  // step one revolution in the other direction:
-  Serial.println("counterclockwise");
-  myStepper.step(-stepsPerRevolution);
-  delay(500);
-  for (int i = 0; i <= stepsPerRevolution; i++){
-    pos = pos - 1;
-    Serial.print("Stepper position: ");
-    Serial.println(pos);
-  }
+  prevdist = distance;  
 }
