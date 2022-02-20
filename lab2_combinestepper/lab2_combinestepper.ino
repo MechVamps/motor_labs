@@ -51,9 +51,9 @@ void loop() {
   delay(500);
   for (int i = 0; i <= stepsPerRevolution; i++){
     pos = pos + 1;
+    Serial.print("Stepper position: ");
+    Serial.println(pos);
   }
-  Serial.print("Stepper position: ");
-  Serial.println(pos);
 
   // step one revolution in the other direction:
   Serial.println("counterclockwise");
@@ -61,7 +61,7 @@ void loop() {
   delay(500);
   for (int i = 0; i <= stepsPerRevolution; i++){
     pos = pos - 1;
+    Serial.print("Stepper position: ");
+    Serial.println(pos);
   }
-  Serial.print("Stepper position: ");
-  Serial.println(pos);
 }
