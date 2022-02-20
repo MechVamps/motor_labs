@@ -348,8 +348,8 @@ void loop() {
       // -----------------------------------------------------------------------------
 
     } else if (SM) {
-        digitalWrite(ledPin,HIGH);
-        /// Move
+      digitalWrite(ledPin,HIGH);
+      /// Move
 //         if (distanceUS < prevdist){
 //           myStepper.step(stepsPerRevolution);
 // //          Serial.println(deg);
@@ -361,11 +361,19 @@ void loop() {
 //           myStepper.step(-stepsPerRevolution);
 // //          Serial.println(-deg);
 //         }
-        int to_step = (prevdist - distanceUS) / step_size
-        myStepper.step(to_step);
-      
-        prevdist = distanceUS; 
-      }
+
+      int to_step = (prevdist - distanceUS) / step_size
+      // myStepper.step(to_step);
+
+      if (to_step <= 0){
+        stepper_control(abs(to_step),1);
+       }
+      else if (to_step > 0){
+        stepper_control(to_step,0);
+      } 
+
+      prevdist = distanceUS; 
+    }
   }
 
 
@@ -411,7 +419,7 @@ void loop() {
       servo.write(sv);
       st = fifthValue.substring(2).toInt();
       steps_from_gui = st/step_size;
-      myStepper.step(steps_from_gui);
+      // myStepper.step(steps_from_gui);
     }
 
   }
@@ -422,4 +430,21 @@ void loop() {
 //Serial.print("Gui: "); Serial.print(Gui); Serial.print("\t");
 //Serial.print("Del: "); Serial.print(Del); Serial.print("\t");
 //Serial.print("count = "); Serial.println(count);
+}
+
+void stepper_control(int steps, int dir){
+  
+  digitalWrite(stepDirPin, dir);
+
+  for (int i = 0; i < steps; i++) {
+    //Serial.println(i);
+    digitalWrite(stepPin, HIGH);
+    delayMicroseconds(1000);
+    digitalWrite(stepPin, LOW);
+    delayMicroseconds(1000);
+    if (sys_state == 1){
+      break;
+    }
+  }
+  
 }
