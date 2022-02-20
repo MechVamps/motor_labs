@@ -302,7 +302,7 @@ void loop() {
     //Serial.println(reading);
     char messageBuf[150];
     sprintf(messageBuf, "S:%d,I:%d,U:%d,F:%d", (Gui||Del), ir_distance, distanceUS, force);
-    Serial.println(messageBuf);
+//    Serial.println(messageBuf);
     
 
     if (count == 0) {
@@ -361,8 +361,9 @@ void loop() {
 //           myStepper.step(-stepsPerRevolution);
 // //          Serial.println(-deg);
 //         }
-        int to_step = (prevdist - distanceUS) / step_size
+        int to_step = (prevdist - distanceUS) / step_size;
         myStepper.step(to_step);
+        Serial.println(to_step);
       
         prevdist = distanceUS; 
       }
