@@ -2,7 +2,7 @@
 #include <Stepper.h>
 
 // Number of steps per output rotation
-double stepsPerRevolution = 0.56;
+int stepsPerRevolution = 1;
 int deg = 0;
 int prevdist = 0;
 
