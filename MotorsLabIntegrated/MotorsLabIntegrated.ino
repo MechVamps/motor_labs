@@ -40,7 +40,8 @@ int stepsPerRevolution = 200;
 int deg = 0;
 int prevdist = 0;
 int step_size = 1.8;
-
+int forwardPin = 2;
+int reversePin = 8;
 // Create Instance of Stepper library
 Stepper myStepper(stepsPerRevolution, 2,8,9,10);
 // free pins: 13, 10, 9, 2, 8
@@ -372,6 +373,8 @@ void loop() {
         stepper_control(to_step,0);
       } 
 
+      Serial.println(to_step)
+
       prevdist = distanceUS; 
     }
   }
@@ -391,10 +394,10 @@ void loop() {
 //      analogWrite(red_light_pin, 0);
 //      analogWrite(green_light_pin, 0);
 //      analogWrite(blue_light_pin, 255);
-      Serial.println("receiving string");
+      // Serial.println("receiving string");
 
       GUImessage = Serial.readStringUntil("#");
-      Serial.println(GUImessage);
+      // Serial.println(GUImessage);
 
 //      Serial.println("GUI COMING");
 
@@ -434,17 +437,30 @@ void loop() {
 
 void stepper_control(int steps, int dir){
   
+  if (dir == 0):
+    digitalWrite(forwardPin, HIGH);
+    delayMicroseconds(1000);
+    digitalWrite(forwardPin, LOW);
+    delayMicroseconds(1000);
+
+  if (dir == 1):
+    digitalWrite(reversePin, HIGH);
+    delayMicroseconds(1000);
+    digitalWrite(reversePin, LOW);
+    delayMicroseconds(1000);
+
+  
   digitalWrite(stepDirPin, dir);
 
-  for (int i = 0; i < steps; i++) {
-    //Serial.println(i);
-    digitalWrite(stepPin, HIGH);
-    delayMicroseconds(1000);
-    digitalWrite(stepPin, LOW);
-    delayMicroseconds(1000);
-    if (sys_state == 1){
-      break;
-    }
-  }
+  // for (int i = 0; i < steps; i++) {
+  //   //Serial.println(i);
+  //   digitalWrite(stepPin, HIGH);
+  //   delayMicroseconds(1000);
+  //   digitalWrite(stepPin, LOW);
+  //   delayMicroseconds(1000);
+  //   if (sys_state == 1){
+  //     break;
+  //   }
+  // }
   
 }
