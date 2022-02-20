@@ -302,7 +302,7 @@ void loop() {
     //Serial.println(reading);
     char messageBuf[150];
     sprintf(messageBuf, "S:%d,I:%d,U:%d,F:%d", (Gui||Del), ir_distance, distanceUS, force);
-    Serial.println(messageBuf);
+//    Serial.println(messageBuf);
     
 
     if (count == 0) {
