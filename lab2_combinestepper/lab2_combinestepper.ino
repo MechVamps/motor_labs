@@ -49,13 +49,15 @@ void loop() {
   
   /// Move
   if (distance < prevdist){
-    myStepper.step(deg);
+    myStepper.step(stepsPerRevolution);
+    Serial.println(deg);
   }
   if (distance == prevdist){
-    
+    Serial.println(deg);
   }
   if (distance > prevdist){
-    myStepper.step(-deg);
+    myStepper.step(-stepsPerRevolution);
+    Serial.println(-deg);
   }
 
   prevdist = distance;  
