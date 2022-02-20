@@ -17,7 +17,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
         # setup initial value and GUI 
         self.setupUi(self)
-        self.serial_port_addr = "/dev/tty.usbmodem145401"
+        self.serial_port_addr = "/dev/tty.usbmodem144301"
         self.GUI_mode = 0
         self.ir_value = 0
         self.ultra_value = 0
@@ -26,7 +26,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.dc_value = 0 # unit is degree when dc_mode = 0; unit is rpm when dc_mode = 1 
         self.dc_mode = 0
         self.servo_value = 0
-        self.motor_data_str = "G:0,DM:0,DV:0,V:0,S:0\n"
+        self.motor_data_str = "G:0,DM:0,DV:0,V:0,S:0#\r"
         self.serial_counter = 0
 
         self.time_axis = list(range(100))  # 100 time points
@@ -94,7 +94,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.read_timer.start()
 
         self.write_timer = QtCore.QTimer()
-        self.write_timer.setInterval(1000)
+        self.write_timer.setInterval(2000)
         self.write_timer.timeout.connect(self.write_motor_data)
         self.write_timer.start()
 
@@ -165,7 +165,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 time.sleep(1)
                 self.serial_counter += 1
             ino_data = self.serial.readLine().data().decode()
-            # print(ino_data)
+            print(ino_data)
             ino_text = ino_data.rstrip('\r\n')
             ino_data_array = re.findall(r"[SIUF]:(\d+)", ino_text)
             if len(ino_data_array) == 4:
@@ -179,14 +179,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     @QtCore.pyqtSlot()
     def write_motor_data(self):
-        print("hello")
-        self.motor_data_str = "G:%d,DM:%d,DV:%d,V:%d,S:%d\n" % (self.GUI_mode, self.dc_mode, self.dc_value, self.servo_value, self.stepper_value)
-        print(self.motor_data_str)
+        # self.motor_data_str = "G:1,DM:1,DV:1,V:{0},S:1#\r".format(int(self.servo_value))
+        self.motor_data_str = "G:%d,DM:%d,DV:%d,V:%d,S:%d#" % (self.GUI_mode, self.dc_mode, self.dc_value, self.servo_value, self.stepper_value)
         self.write_success = self.serial.write(self.motor_data_str.encode())
-        print("write succeed: " + str(self.write_success))
+        # print("write succeed: " + str(self.write_success))
+
 
     def read_sensor_data(self):
-        # sensor_read_mode = "G:0,DM:0,DV:0,V:0,S:0\n"
+        # sensor_read_mode = "G:0,DM:0,DV:0,V:0,S:0"
         # self.serial.write(sensor_read_mode.encode())
 
         self.ultra_lcd.display(str(self.ultra_value))
