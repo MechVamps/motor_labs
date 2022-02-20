@@ -36,9 +36,10 @@ String GUImessage; // string of data coming from GUI
 // Stepper
 // Number of steps per output rotation
 // Number of steps per output rotation
-int stepsPerRevolution = 10;
+int stepsPerRevolution = 200;
 int deg = 0;
 int prevdist = 0;
+int step_size = 1.8;
 
 // Create Instance of Stepper library
 Stepper myStepper(stepsPerRevolution, 2,8,9,10);
@@ -49,7 +50,7 @@ const int trigPin = A1;
 const int echoPin = A2;
 long duration;
 int distanceUS;
-
+  
 
 // -----------------------------------------------------------------------------
 // RC SERVOMOTOR INITIALIZATIONS (FROM ADVAIT)
@@ -349,17 +350,19 @@ void loop() {
     } else if (SM) {
         digitalWrite(ledPin,HIGH);
         /// Move
-        if (distanceUS < prevdist){
-          myStepper.step(stepsPerRevolution);
-//          Serial.println(deg);
-        }
-        if (distanceUS == prevdist){
-//          Serial.println(deg);
-        }
-        if (distanceUS > prevdist){
-          myStepper.step(-stepsPerRevolution);
-//          Serial.println(-deg);
-        }
+//         if (distanceUS < prevdist){
+//           myStepper.step(stepsPerRevolution);
+// //          Serial.println(deg);
+//         }
+//         if (distanceUS == prevdist){
+// //          Serial.println(deg);
+//         }
+//         if (distanceUS > prevdist){
+//           myStepper.step(-stepsPerRevolution);
+// //          Serial.println(-deg);
+//         }
+        int to_step = (prevdist - distanceUS) / step_size
+        myStepper.step(to_step);
       
         prevdist = distanceUS; 
       }
@@ -407,7 +410,7 @@ void loop() {
 //      analogWrite(blue_light_pin, 0);
       servo.write(sv);
       st = fifthValue.substring(2).toInt();
-      steps_from_gui = st/1.8;
+      steps_from_gui = st/step_size;
       myStepper.step(steps_from_gui);
     }
 
