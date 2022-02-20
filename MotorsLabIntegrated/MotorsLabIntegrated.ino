@@ -36,6 +36,7 @@ String GUImessage; // string of data coming from GUI
 // Stepper
 // Number of steps per output rotation
 int stepsPerRevolution = 200;
+int pos = 0;
 
 // Create Instance of Stepper library
 Stepper myStepper(stepsPerRevolution, 2,8,9,10);
@@ -46,6 +47,7 @@ const int trigPin = A1;
 const int echoPin = A2;
 long duration;
 int distanceUS;
+
 
 // -----------------------------------------------------------------------------
 // RC SERVOMOTOR INITIALIZATIONS (FROM ADVAIT)
@@ -292,6 +294,7 @@ void loop() {
   }
 
   if (S||P) {
+    
     //Serial.println(reading);
     char messageBuf[150];
     sprintf(messageBuf, "S:%d,I:%d,U:%d,F:%d", (Gui||Del), ir_distance, distanceUS, force);
@@ -303,6 +306,7 @@ void loop() {
     }
 
     if (RC) {
+      digitalWrite(ledPin , LOW);
       // -----------------------------------------------------------------------------
       // START OF RC SERVOMOTOR CODE FROM ADVAIT
       reading = analogRead(A0); //attached to analog 0
@@ -315,12 +319,13 @@ void loop() {
       // -----------------------------------------------------------------------------
 
     } else if (DC) {
+      digitalWrite(ledPin , LOW);
   //    Serial.println("DC Motor is active (Sensor Controlled)");
       // -----------------------------------------------------------------------------
       // START OF DC MOTOR CODE FROM JESSICA
       //  DC MOTOR CONTROL USING IR SENSOR 
 //      Serial.println("DC Motor");
-      Serial.println(pwm_speed);
+//      Serial.println(pwm_speed);
       if (ir_distance >= 10 && ir_distance <= 30){
       pwm_speed = map(ir_distance, 3, 30, 0, 255);
       analogWrite(pwmPin, pwm_speed);
@@ -339,39 +344,25 @@ void loop() {
       // -----------------------------------------------------------------------------
 
     } else if (SM) {
-      // digitalWrite(ledPin , HIGH);
-//      Serial.println("Stepper");
-      // Adjust Distance
-//      if (distanceUS <10){
-//        stepsPerRevolution = stepsPerRevolution *0.1*distanceUS;
-//      }
-//      else{
-//        stepsPerRevolution = stepsPerRevolution * 0.05*distanceUS;
-//      }
+      digitalWrite(ledPin,millis()/500 % 2);
+//      myStepper.step(stepsPerRevolution);
+////        delayMicroseconds(1000);
+//        for (int i = 0; i <= stepsPerRevolution; i++){
+//          pos = pos + 1;
+////          Serial.print("Stepper position: ");
+////          Serial.println(pos);
+//        }
 //      
-      /// Move
-      // step one revolution in one direction:
-      
-//      unsigned long Forward_time = millis();
-//      if (Forward_time > 500) {
-////        Serial.println("clockwise");
-//        myStepper.step(stepsPerRevolution);
-//      }
-//      
-//      unsigned long Backward_time = Forward_time + 500;
-//      if (Backward_time > 1000) {
-////         Serial.println("counterclockwise");
+//        // step one revolution in the other direction:
+////        Serial.println("counterclockwise");
 //        myStepper.step(-stepsPerRevolution);
-////        Forward_time = millis();
-//      }
-      
-    
-      // step one revolution in the other direction:
-     
-//      myStepper.step(-stepsPerRevolution);
-//      delay(500);
-    }
-    // set LED to blue, yellow, or pink depending on motor
+////        delayMicroseconds(1000);
+//        for (int i = 0; i <= stepsPerRevolution; i++){
+//          pos = pos - 1;
+////          Serial.print("Stepper position: ");
+////          Serial.println(pos);
+//        }
+      }
   }
 
 
