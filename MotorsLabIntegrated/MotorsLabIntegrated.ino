@@ -295,7 +295,7 @@ void loop() {
     //Serial.println(reading);
     char messageBuf[150];
     sprintf(messageBuf, "S:%d,I:%d,U:%d,F:%d", (Gui||Del), ir_distance, distanceUS, force);
-//    Serial.println(messageBuf);
+    Serial.println(messageBuf);
     
 
     if (count == 0) {
@@ -339,7 +339,7 @@ void loop() {
       // -----------------------------------------------------------------------------
 
     } else if (SM) {
-      digitalWrite(ledPin , HIGH);
+      // digitalWrite(ledPin , HIGH);
 //      Serial.println("Stepper");
       // Adjust Distance
 //      if (distanceUS <10){
@@ -381,12 +381,17 @@ void loop() {
     // use GUI output to control motors
     // Serial.println("GUI Coming");
     int sv;
+    digitalWrite(ledPin , HIGH);
 
     if (Serial.available() > 0) {
 //      analogWrite(red_light_pin, 0);
 //      analogWrite(green_light_pin, 0);
 //      analogWrite(blue_light_pin, 255);
-      GUImessage = Serial.readStringUntil("\n");
+      Serial.println("receiving string");
+
+      GUImessage = Serial.readStringUntil("#");
+      Serial.println(GUImessage);
+
 //      Serial.println("GUI COMING");
 
       int commaIndex = GUImessage.indexOf(",");
