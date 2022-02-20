@@ -35,8 +35,10 @@ String GUImessage; // string of data coming from GUI
 // STEPPER MOTOR INITIALIZATIONS (FROM AMY)
 // Stepper
 // Number of steps per output rotation
-int stepsPerRevolution = 200;
-int pos = 0;
+// Number of steps per output rotation
+int stepsPerRevolution = 10;
+int deg = 0;
+int prevdist = 0;
 
 // Create Instance of Stepper library
 Stepper myStepper(stepsPerRevolution, 2,8,9,10);
@@ -224,6 +226,7 @@ void loop() {
   duration = pulseIn(echoPin, HIGH);
   // Calculating the distance
   distanceUS = duration * 0.034 / 2;
+  deg = stepsPerRevolution*1.8;
       // END ULTRASONIC SENSOR CODE FROM AMY
    // -----------------------------------------------------------------------------
    
@@ -344,24 +347,21 @@ void loop() {
       // -----------------------------------------------------------------------------
 
     } else if (SM) {
-      digitalWrite(ledPin,millis()/500 % 2);
-//      myStepper.step(stepsPerRevolution);
-////        delayMicroseconds(1000);
-//        for (int i = 0; i <= stepsPerRevolution; i++){
-//          pos = pos + 1;
-////          Serial.print("Stepper position: ");
-////          Serial.println(pos);
-//        }
-//      
-//        // step one revolution in the other direction:
-////        Serial.println("counterclockwise");
-//        myStepper.step(-stepsPerRevolution);
-////        delayMicroseconds(1000);
-//        for (int i = 0; i <= stepsPerRevolution; i++){
-//          pos = pos - 1;
-////          Serial.print("Stepper position: ");
-////          Serial.println(pos);
-//        }
+        digitalWrite(ledPin,HIGH);
+        /// Move
+        if (distanceUS < prevdist){
+          myStepper.step(stepsPerRevolution);
+//          Serial.println(deg);
+        }
+        if (distanceUS == prevdist){
+//          Serial.println(deg);
+        }
+        if (distanceUS > prevdist){
+          myStepper.step(-stepsPerRevolution);
+//          Serial.println(-deg);
+        }
+      
+        prevdist = distanceUS; 
       }
   }
 
@@ -372,6 +372,8 @@ void loop() {
     // use GUI output to control motors
     // Serial.println("GUI Coming");
     int sv;
+    int st;
+    int steps_from_gui;
     digitalWrite(ledPin , HIGH);
 
     if (Serial.available() > 0) {
@@ -404,7 +406,9 @@ void loop() {
 //      analogWrite(green_light_pin, 0);
 //      analogWrite(blue_light_pin, 0);
       servo.write(sv);
-      int st = fifthValue.substring(2).toInt();
+      st = fifthValue.substring(2).toInt();
+      steps_from_gui = st/1.8;
+      myStepper.step(steps_from_gui);
     }
 
   }
