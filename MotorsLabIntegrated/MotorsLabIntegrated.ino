@@ -349,6 +349,9 @@ void loop() {
       // -----------------------------------------------------------------------------
 
     } else if (SM) {
+
+//      Serial.println("ultrasonic distance");
+//      Serial.println(distanceUS);
       digitalWrite(ledPin,HIGH);
       /// Move
 //         if (distanceUS < prevdist){
@@ -363,9 +366,12 @@ void loop() {
 // //          Serial.println(-deg);
 //         }
 
-      int to_step = (prevdist - distanceUS) / step_size
+      int to_step = (prevdist - distanceUS) / step_size;
       // myStepper.step(to_step);
 
+      Serial.println("steps to step");
+      Serial.println(to_step);
+      
       if (to_step <= 0){
         stepper_control(abs(to_step),1);
        }
@@ -373,7 +379,7 @@ void loop() {
         stepper_control(to_step,0);
       } 
 
-      Serial.println(to_step)
+      Serial.println("finished stepping");
 
       prevdist = distanceUS; 
     }
@@ -437,20 +443,26 @@ void loop() {
 
 void stepper_control(int steps, int dir){
   
-  if (dir == 0):
-    digitalWrite(forwardPin, HIGH);
-    delayMicroseconds(1000);
-    digitalWrite(forwardPin, LOW);
-    delayMicroseconds(1000);
+  if (dir == 0){
+    for (int i = 0; i < steps; i++) {
+      digitalWrite(forwardPin, HIGH);
+      delayMicroseconds(1000);
+      digitalWrite(forwardPin, LOW);
+      delayMicroseconds(1000);
+    }
+  }
 
-  if (dir == 1):
-    digitalWrite(reversePin, HIGH);
-    delayMicroseconds(1000);
-    digitalWrite(reversePin, LOW);
-    delayMicroseconds(1000);
+  if (dir == 1){
+    for (int i = 0; i < steps; i++) {
+      digitalWrite(reversePin, HIGH);
+      delayMicroseconds(1000);
+      digitalWrite(reversePin, LOW);
+      delayMicroseconds(1000);
+    }
+  }
 
   
-  digitalWrite(stepDirPin, dir);
+  //  digitalWrite(stepDirPin, dir);
 
   // for (int i = 0; i < steps; i++) {
   //   //Serial.println(i);
