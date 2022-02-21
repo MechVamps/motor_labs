@@ -443,26 +443,21 @@ void loop() {
 
 void stepper_control(int steps, int dir){
   
+  int stepper_pin = reversePin;
+  
   if (dir == 0){
-    for (int i = 0; i < steps; i++) {
-      digitalWrite(forwardPin, HIGH);
-      delayMicroseconds(1000);
-      digitalWrite(forwardPin, LOW);
-      delayMicroseconds(1000);
-    }
+    stepper_pin = forwardPin;
   }
 
-  if (dir == 1){
-    for (int i = 0; i < steps; i++) {
-      digitalWrite(reversePin, HIGH);
-      delayMicroseconds(1000);
-      digitalWrite(reversePin, LOW);
-      delayMicroseconds(1000);
-    }
+  for (int i = 0; i < steps; i++) {
+    digitalWrite(stepper_pin, HIGH);
+    delayMicroseconds(1000);
+    digitalWrite(stepper_pin, LOW);
+    delayMicroseconds(1000);
   }
 
   
-  //  digitalWrite(stepDirPin, dir);
+  // digitalWrite(stepDirPin, dir);
 
   // for (int i = 0; i < steps; i++) {
   //   //Serial.println(i);
